@@ -60,7 +60,7 @@ OCULIS is built around a distinctive user experience:
 
 > **Enter a URL and see the remote-rendered evidence of what that destination was going to serve or load before you navigate to it yourself.**
 
-The platform surfaces artifacts such as:
+The platform can surface artifacts such as:
 
 * Rendered page screenshots
 * Redirect chains
@@ -94,9 +94,11 @@ OCULIS is designed to answer a richer question:
 
 That difference matters.
 
-* A URL can use HTTPS and still be suspicious.
-* A domain can contain a legitimate brand name and still be a lookalike.
-* A page can look harmless while loading external scripts or requesting suspicious resources.
+A URL can use HTTPS and still be suspicious.
+
+A domain can contain a legitimate brand name and still be a lookalike.
+
+A page can look harmless while loading external scripts or requesting suspicious resources.
 
 OCULIS therefore treats a verdict as an **explainable conclusion derived from multiple observable signals**, not as an unexplained binary decision.
 
@@ -106,64 +108,106 @@ OCULIS therefore treats a verdict as an **explainable conclusion derived from mu
 
 ### Remote URL Inspection
 
-Submit a URL without directly opening the target in your normal browsing session. OCULIS performs the inspection on its own infrastructure and returns the collected evidence.
+Submit a URL without directly opening the target in your normal browsing session.
+
+OCULIS performs the inspection on its own infrastructure and returns the collected evidence.
 
 ### SSRF-Aware Fetching
 
-The analysis pipeline validates destinations before network access and re-validates destinations across redirects. The intent is to prevent user-controlled URLs from being used to reach:
+The analysis pipeline validates destinations before network access and re-validates destinations across redirects.
 
-* `127.0.0.1` / `localhost`
-* Private network ranges
-* Link-local addresses
-* Cloud metadata endpoints
-* Restricted internal destinations
+The intent is to prevent user-controlled URLs from being used to reach:
+
+```text
+127.0.0.1
+localhost
+private networks
+link-local addresses
+metadata endpoints
+other restricted destinations
+
+```
+
+This is treated as foundational infrastructure rather than an optional feature.
 
 ### Remote Browser Rendering
 
 OCULIS can render a destination inside a sandboxed browser environment and capture:
 
-* Full page screenshots
+* screenshot
 * DOM structure
-* Form elements and password inputs
-* Script tags and external iframes
-* Console errors
-* Outbound network requests
+* forms
+* password inputs
+* scripts
+* iframes
+* console errors
+* network requests
+
+This makes the product useful for inspecting the **actual rendered experience**, not only the raw URL string.
 
 ### Redirect Intelligence
 
 Instead of examining only the submitted URL:
 
-$$\text{Target A} \longrightarrow \text{Redirect B} \longrightarrow \text{Final Destination C}$$
+```text
+A → B → C
 
-OCULIS follows the chain inside its controlled analysis environment and records every hop toward the final destination.
+```
+
+OCULIS follows the chain inside its controlled analysis environment and records the path toward the final destination.
+
+Redirects can themselves become useful evidence.
 
 ### Infrastructure Inspection
 
-Combines DNS information, TLS certificate basics, HTTP status, response headers, security headers, and redirect behavior into a unified inspection pass.
+The infrastructure layer combines:
+
+* DNS information
+* TLS certificate basics
+* HTTP status
+* response headers
+* security headers
+* redirect behavior
+
+into a unified inspection pass.
 
 ### Explainable Risk Engine
 
-Produces a score from **0–100** and a verdict category backed by findings. Each finding includes severity, confidence, evidence, category, and audit reasoning.
+OCULIS produces a score from **0–100** and a verdict category backed by findings.
+
+Each finding can include:
+
+```text
+Finding
+Severity
+Confidence
+Evidence
+Category
+Reasoning
+
+```
+
+The objective is to make the score auditable by a human.
 
 ---
 
 ## What the User Actually Sees
 
-The OCULIS experience is built around evidence presentation.
+The OCULIS experience is designed around evidence.
 
-### Before Inspection
+### Before inspection
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │ TARGET URL                                                  │
 │                                                             │
-│  › https://suspicious-example.com/login                     │
+│   › https://suspicious-example.com/login                    │
 │                                                 INSPECT URL │
 └─────────────────────────────────────────────────────────────┘
 
 ```
 
-### During Inspection
+### During inspection
 
 ```text
 REMOTE INSPECTION
@@ -177,29 +221,145 @@ REMOTE INSPECTION
 
 ```
 
-### After Inspection
+### After inspection
 
 ```text
-RISK SCORE: 72 / 100 [ HIGH RISK ]
+RISK SCORE
 
+     72 / 100
+
+HIGH RISK
+
+```
+
+followed by the evidence trail:
+
+```text
 [ Redirect Chain ]
+
 [ Browser Evidence ]
+
 [ Network Requests ]
+
 [ Infrastructure ]
+
 [ Findings ]
+
 [ Why OCULIS reached this verdict ]
 
 ```
+
+The product is therefore not just a score generator.
+
+It is an **evidence presentation system for suspicious URLs**.
 
 ---
 
 ## High-Value Use Cases
 
-* **Phishing Investigation:** Inspect received suspension/verification links safely before credential entry.
-* **SOC / Analyst Triage:** Perform a controlled first-pass inspection on URLs from ticketing systems, chat messages, or threat alerts.
-* **Incident Response:** Snapshot observable remote behavior during active incidents without exposing local browser infrastructure.
-* **Threat Research:** Analyze malicious landing pages, redirect networks, and lookalike domains.
-* **Security Awareness:** Demonstrate visually how URLs redirect, trigger external requests, and capture credentials.
+### Phishing Investigation
+
+A user receives:
+
+```text
+"Your account will be suspended. Verify now."
+
+```
+
+Instead of clicking the link, they submit it to OCULIS.
+
+The platform can expose:
+
+* suspicious redirects
+* credential forms
+* mismatched domains
+* external scripts
+* unusual network activity
+* infrastructure signals
+
+before the user interacts with the destination themselves.
+
+---
+
+### Security Awareness
+
+Organizations can use OCULIS as an educational demonstration tool.
+
+A learner can submit:
+
+```text
+https://example-phishing-domain.test
+
+```
+
+and visually understand:
+
+```text
+URL
+ ↓
+Redirect
+ ↓
+Rendered login page
+ ↓
+Credential form
+ ↓
+External requests
+ ↓
+Evidence
+
+```
+
+This makes cybersecurity concepts much easier to understand than a simple red warning page.
+
+---
+
+### SOC / Analyst Triage
+
+Security analysts frequently need to inspect URLs from:
+
+* phishing emails
+* tickets
+* chat messages
+* threat reports
+* browser alerts
+* suspicious documents
+
+OCULIS provides a controlled first-pass inspection before deeper investigation.
+
+---
+
+### Incident Response
+
+During an incident, analysts may need to determine:
+
+> "What does this URL actually serve?"
+
+OCULIS can provide a snapshot of observable remote behavior without requiring the analyst to manually visit the destination.
+
+---
+
+### Threat Research
+
+Researchers can use the platform as an initial observation layer for:
+
+* malicious landing pages
+* redirect infrastructure
+* credential harvesting pages
+* suspicious domains
+* phishing campaigns
+* lookalike websites
+
+---
+
+### Security Education & Demonstrations
+
+OCULIS is also designed to be highly visual.
+
+Instead of telling students:
+
+> "This page contains a suspicious form."
+
+the interface can show the page, the captured form, the request trail, the relevant evidence, and the resulting finding.
 
 ---
 
@@ -233,6 +393,16 @@ flowchart LR
     SB --- SAFE[SSRF / Protocol / Destination Controls]
 
 ```
+
+The important architectural principle is:
+
+> **User-controlled destinations never receive unrestricted network access from the analysis pipeline.**
+
+The SSRF-safe network layer sits underneath the analysis components rather than being added after the fact.
+
+---
+
+## Architecture at a Glance
 
 ```text
                          ┌──────────────────┐
@@ -288,11 +458,46 @@ flowchart LR
 
 ## Technology Stack
 
-* **Frontend:** React, TypeScript, Vite, React Router, TanStack Query
-* **Backend:** Python, FastAPI, Pydantic, SQLAlchemy, Alembic, HTTPX, dnspython, cryptography
-* **Browser Sandbox:** Playwright, Chromium, Containerized Sandbox
-* **Infrastructure:** Docker, Docker Compose, PostgreSQL, Redis, RQ
-* **Quality & Testing:** pytest, ESLint, Oxlint, GitHub Actions
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* CSS / responsive UI
+* React Router
+* TanStack Query
+
+### Backend
+
+* Python
+* FastAPI
+* Pydantic
+* SQLAlchemy
+* Alembic
+* HTTPX
+* dnspython
+* cryptography
+
+### Browser Analysis
+
+* Playwright
+* Chromium
+* Containerized sandbox
+
+### Infrastructure
+
+* Docker
+* Docker Compose
+* PostgreSQL
+* Redis
+* RQ
+
+### Quality
+
+* pytest
+* TypeScript
+* ESLint / Oxlint
+* GitHub Actions
 
 ---
 
@@ -315,39 +520,103 @@ OCULIS/
 
 ```
 
-For implementation details, setup instructions, and development workflow, refer to **`oculis/SETUP_AND_TESTING.md`**.
+For implementation details, setup instructions, and development workflow, see **[`oculis/SETUP_AND_TESTING.md`](https://www.google.com/search?q=./oculis/SETUP_AND_TESTING.md)**.
 
 ---
 
 ## Engineering Principles
 
-1. **Inspect before exposing:** The first interaction with a suspicious destination should never require a local browser session.
-2. **Evidence over black-box answers:** Security verdicts must be human-auditable and explainable.
-3. **Isolation before functionality:** The pipeline fetching attacker-controlled content must be hardened first.
-4. **HTTPS is not trust:** Transport encryption is one signal, not a guarantee of safety.
-5. **Confidence is not certainty:** OCULIS provides analytical evidence rather than claiming omniscient threat classification.
+### 01 — Inspect before exposing
+
+The first interaction with a suspicious destination should not have to be the user's own browser.
+
+### 02 — Evidence over black-box answers
+
+A security verdict should be explainable.
+
+### 03 — Isolation before functionality
+
+The system that fetches attacker-controlled URLs must be hardened before analysis features are added around it.
+
+### 04 — HTTPS is not trust
+
+Transport encryption is one signal, not a complete security verdict.
+
+### 05 — Confidence is not certainty
+
+OCULIS provides evidence and risk assessment; it does not claim omniscient malware detection.
+
+### 06 — Security tooling should be understandable
+
+Analysts and ordinary users should be able to see what happened, not just receive a number.
 
 ---
 
-## Current Scope & Roadmap
+## Current MVP Scope
 
-### Current Scope
+The current project focuses on the core inspection pipeline:
 
-* URL normalization & structural heuristics
-* Homoglyph and lookalike detection
-* SSRF-hardened network fetching
-* Redirect chain tracing & DNS/TLS inspection
-* Sandboxed DOM, screenshot, and request capture
-* Rule-backed risk scoring dashboard
+* URL parsing and normalization
+* URL structural heuristics
+* lookalike / homoglyph checks
+* SSRF-aware fetching
+* redirect chain capture
+* DNS / TLS / HTTP inspection
+* browser sandbox rendering
+* DOM extraction
+* screenshot capture
+* network request capture
+* threat rules
+* evidence-backed findings
+* configurable risk scoring
+* results dashboard
+* browser evidence visualization
 
-### Roadmap
+---
 
-* [ ] IOC extraction and export
-* [ ] PDF security report generation
-* [ ] Network relationship graphing
-* [ ] Threat intelligence feed integrations
-* [ ] Multi-tenant organization support & API key management
-* [ ] Browser extension and SIEM integrations
+## Roadmap
+
+Planned expansion areas include:
+
+```text
+Reputation enrichment
+IOC extraction / export
+PDF security reports
+Network relationship graphs
+Additional threat intelligence sources
+Machine-learning assisted classification
+Authentication
+Organizations / multi-tenancy
+API keys
+CLI
+Browser extension
+SIEM integrations
+Advanced rate limiting
+
+```
+
+The goal is to expand the evidence pipeline without turning the core experience into an opaque black box.
+
+---
+
+## Project Philosophy
+
+OCULIS is intentionally positioned between:
+
+```text
+URL scanner
+        +
+remote browser sandbox
+        +
+security telemetry
+        +
+explainable risk analysis
+        +
+visual evidence
+
+```
+
+The result is a workflow in which a suspicious link becomes something that can be **observed, inspected, and explained** before becoming something you interact with directly.
 
 ---
 
@@ -360,47 +629,20 @@ For implementation details, setup instructions, and development workflow, refer 
 
 ---
 
-## Responsible Use & Status
+## Responsible Use
 
-OCULIS is intended for legitimate security analysis, defensive research, education, and authorized testing. Users are responsible for ensuring inspections comply with local authorization requirements.
+OCULIS is intended for legitimate security analysis, defensive research, education, and authorized testing.
 
-**Status:** OCULIS is an actively developed security engineering project and portfolio-grade research platform.
+Do not use the platform to access systems or resources you are not authorized to inspect.
 
+The risk score should be treated as an analytical signal rather than an absolute guarantee of safety or maliciousness.
 
+---
 
+## Status
 
+**OCULIS is an actively developed security engineering project and portfolio-grade research build.**
 
+The current focus is on making the remote inspection pipeline secure, explainable, visually transparent, and practical to use.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+---
