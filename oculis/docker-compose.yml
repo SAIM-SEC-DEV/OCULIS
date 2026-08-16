@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: oculis
+      POSTGRES_PASSWORD: oculis
+      POSTGRES_DB: oculis
+    ports:
+      - "5432:5432"
+    volumes:
+      - oculis_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oculis -d oculis"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./apps/api
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://oculis:oculis@postgres:5432/oculis
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api:/app
+      - oculis_artifacts:/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["sh", "-c", "alembic upgrade head && uvicorn oculis_api.main:app --host 0.0.0.0 --port 8000"]
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: worker.Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://oculis:oculis@postgres:5432/oculis
+      REDIS_URL: redis://redis:6379/0
+      SANDBOX_URL: http://sandbox:9000
+    volumes:
+      - oculis_artifacts:/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      sandbox:
+        condition: service_healthy
+    networks:
+      - default
+      - oculis_sandbox
+
+  sandbox:
+    build: ./apps/sandbox
+    environment:
+      ARTIFACT_DIR: /artifacts
+    volumes:
+      - oculis_artifacts:/artifacts
+    expose:
+      - "9000"
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/docs')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - oculis_sandbox
+
+  web:
+    build: ./apps/web
+    env_file: .env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+networks:
+  oculis_sandbox:
+
+
+volumes:
+  oculis_postgres_data:
+  oculis_artifacts:
