@@ -501,6 +501,105 @@ The SSRF-safe network layer sits underneath the analysis components rather than 
 
 ---
 
+## Quick Start
+
+### Prerequisites
+
+Make sure the following are available on your host system:
+
+* Docker
+* Docker Compose
+* Git
+
+For frontend development outside Docker, Node.js and npm are also required.
+
+### Clone Repository
+
+```bash
+git clone https://github.com/SAIM-SEC-DEV/OCULIS.git
+cd OCULIS/oculis
+
+```
+
+### Configure Environment
+
+Create your local environment configuration file:
+
+```bash
+cp .env.example .env
+
+```
+
+Review the values in `.env` before starting the stack. **Never commit `.env` to source control.**
+
+### Start OCULIS Stack
+
+Start the complete application stack in detached mode:
+
+```bash
+docker compose up -d
+
+```
+
+Verify service status:
+
+```bash
+docker compose ps
+
+```
+
+The stack manages the following containers:
+
+* React frontend
+* FastAPI API service
+* PostgreSQL database
+* Redis message broker
+* Asynchronous analysis worker
+* Browser sandbox
+
+### Service Access Points
+
+* **Frontend Web UI:** `http://localhost:5173`
+* **Backend API:** `http://localhost:8000`
+* **API Health Status:** `http://localhost:8000/health`
+
+### Stop the Stack
+
+```bash
+docker compose down
+
+```
+
+To stop the services and purge persistent database volumes:
+
+```bash
+docker compose down -v
+
+```
+
+### Development & Testing Checks
+
+**Frontend Verification:**
+
+```bash
+cd apps/web
+npm ci
+npm run build
+npx tsc -b
+npm run lint
+
+```
+
+**Backend Unit & Integration Tests:**
+
+```bash
+cd apps/api
+pytest
+
+```
+
+---
+
 ## Repository Structure
 
 ```text
@@ -520,7 +619,7 @@ OCULIS/
 
 ```
 
-For implementation details, setup instructions, and development workflow, see **[`oculis/SETUP_AND_TESTING.md`](https://www.google.com/search?q=./oculis/SETUP_AND_TESTING.md)**.
+For detailed configuration instructions, environment parameter breakdowns, advanced testing procedures, and troubleshooting, refer to **[`oculis/SETUP_AND_TESTING.md`](https://www.google.com/search?q=./oculis/SETUP_AND_TESTING.md)**.
 
 ---
 
