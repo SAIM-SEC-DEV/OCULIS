@@ -613,9 +613,7 @@ OCULIS/
     │   ├── sandbox/
     │   └── web/
     │
-    └── docs/
-        ├── OCULIS_FIXES_IMPLEMENTED.md
-        └── oculis-refined-spec.md
+    
 
 ```
 
