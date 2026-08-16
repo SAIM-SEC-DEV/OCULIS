@@ -1,34 +1,75 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
-.venv/
-*.egg-info/
+*.pyo
 .pytest_cache/
-.ruff_cache/
 .mypy_cache/
+.ruff_cache/
+.pyre/
+.venv/
+venv/
+env/
 
-# Node
+# =========================
+# Node / frontend
+# =========================
 node_modules/
 dist/
 .vite/
+coverage/
+.npm/
+.eslintcache
 
-# Env
+# =========================
+# Environment / secrets
+# =========================
 .env
-.env.local
+.env.*
+!.env.example
 
-# OS
-.DS_Store
-
-# Editors
-.vscode/
-.idea/
-
-# Logs / temporary files
+# =========================
+# Logs / runtime artifacts
+# =========================
 *.log
 *.tmp
+*.temp
+*.pid
+
+# =========================
+# Backup / editor files
+# =========================
 *.bak
 *.bak.*
+*.swp
+*.swo
 .DS_Store
+Thumbs.db
 
-# Archives
+# =========================
+# Archives / local packages
+# =========================
 *.zip
+*.tar
+*.tar.gz
+
+# =========================
+# IDE
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# =========================
+# Docker / local data
+# =========================
+postgres-data/
+redis-data/
+docker-data/
+
+# =========================
+# OS / tooling
+# =========================
+*.orig

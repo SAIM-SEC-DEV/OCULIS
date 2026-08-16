@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
+import { RuntimeLoader } from './RuntimeLoader'
 import { useEffect, useState } from 'react'
+
 
 function OculisMark({ size = 40 }: { size?: number }) {
   return (
@@ -37,6 +39,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-shell">
+      <RuntimeLoader />
       <div className="app-atmosphere" aria-hidden="true">
         <div className="app-atmosphere__halo" />
         <div className="app-atmosphere__mesh" />
@@ -80,6 +83,11 @@ export function Layout({ children }: { children: ReactNode }) {
       <footer className="site-footer">
         <span>OCULIS / evidence before exposure</span>
         <span>zero local navigation · transient analysis surface</span>
+        <nav className="footer-links">
+  <Link to="/about">About</Link>
+  <Link to="/privacy">Privacy</Link>
+  <Link to="/faq">FAQ</Link>
+</nav>
       </footer>
 
       <style>{`

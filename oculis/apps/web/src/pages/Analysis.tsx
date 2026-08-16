@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getAnalysis, type AnalysisStatus, type Finding, type RedirectHop } from '../lib/api'
@@ -231,23 +232,107 @@ function RedirectTimeline({ redirects }: { redirects: RedirectHop[] }) {
 function BrowserEvidence({ data }: { data: Awaited<ReturnType<typeof getAnalysis>> }) {
   const browser = data.browser
   const requests = data.network_requests || []
-  if (!browser && !data.screenshot_url && !requests.length) return <div className="browser-preview"><div className="browser-placeholder"><div className="browser-placeholder__inner"><span>no browser artifact</span><p>The sandbox did not return a screenshot or browser telemetry for this target.</p></div></div></div>
-  return <div className="browser-preview">
-    {data.screenshot_url ? <img src={data.screenshot_url} alt="Sandbox page screenshot" className="browser-image" /> : <div className="browser-placeholder"><div className="browser-placeholder__inner"><span>remote render captured</span><p>No screenshot artifact was returned, but the sandbox returned behavioral telemetry below.</p></div></div>}
-    <div className="metric-grid" style={{ margin: '14px 0 0' }}>
-      <Metric label="Title" value={browser?.title} />
-      <Metric label="Password inputs" value={browser?.password_inputs} />
-      <Metric label="Email inputs" value={browser?.email_inputs} />
-      <Metric label="Forms" value={browser?.forms?.length} />
-      <Metric label="Iframes" value={browser?.iframes?.length} />
-      <Metric label="Scripts" value={browser?.script_urls?.length} />
+  const [imageLoaded, setImageLoaded] = useState(false)
+
+  if (!browser && !data.screenshot_url && !requests.length) {
+    return (
+      <div className="browser-preview">
+        <div className="browser-placeholder">
+          <div className="browser-placeholder__inner">
+            <span>no browser artifact</span>
+            <p>The sandbox did not return a screenshot or browser telemetry for this target.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="browser-preview">
+      {data.screenshot_url ? (
+        <div className={`browser-media ${imageLoaded ? 'is-loaded' : ''}`}>
+          {!imageLoaded && (
+            <div className="browser-skeleton" aria-label="Loading browser evidence">
+              <div className="browser-skeleton__top" />
+              <div className="browser-skeleton__body">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+          )}
+
+          <img
+            src={data.screenshot_url}
+            alt="Sandbox page screenshot"
+            className="browser-image"
+            onLoad={() => setImageLoaded(true)}
+          />
+        </div>
+      ) : (
+        <div className="browser-placeholder">
+          <div className="browser-placeholder__inner">
+            <span>remote render captured</span>
+            <p>No screenshot artifact was returned, but the sandbox returned behavioral telemetry below.</p>
+          </div>
+        </div>
+      )}
+
+      <div className="metric-grid" style={{ margin: '14px 0 0' }}>
+        <Metric label="Title" value={browser?.title} />
+        <Metric label="Password inputs" value={browser?.password_inputs} />
+        <Metric label="Email inputs" value={browser?.email_inputs} />
+        <Metric label="Forms" value={browser?.forms?.length} />
+        <Metric label="Iframes" value={browser?.iframes?.length} />
+        <Metric label="Scripts" value={browser?.script_urls?.length} />
+      </div>
+
+      {browser?.error && (
+        <div className="state-card warning" style={{ margin: '14px 0 0' }}>
+          <h2>Sandbox note</h2>
+          <p>{browser.error}</p>
+        </div>
+      )}
+
+      {browser?.console_errors?.length ? (
+        <div className="request-log" style={{ marginTop: 14 }}>
+          <div className="panel-label" style={{ padding: 12 }}>Console errors</div>
+          {browser.console_errors.map((error, index) => (
+            <pre
+              key={index}
+              className="evidence-block"
+              style={{
+                margin: 0,
+                borderBottom: '1px solid var(--line)',
+                borderLeft: 0,
+              }}
+            >
+              {error}
+            </pre>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="request-log" style={{ marginTop: 14 }}>
+        {requests.length ? (
+          requests.map((request, index) => (
+            <div key={`${request.url}-${index}`} className="request-row">
+              <span className="request-row__method">{request.method}</span>
+              <span className="request-row__url">{request.url}</span>
+              <span className={`request-row__state ${request.blocked ? 'blocked' : 'allowed'}`}>
+                {request.blocked ? 'blocked' : 'allowed'}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: 14, color: 'var(--muted)', fontSize: 11 }}>
+            No browser requests were captured.
+          </div>
+        )}
+      </div>
     </div>
-    {browser?.error && <div className="state-card warning" style={{ margin: '14px 0 0' }}><h2>Sandbox note</h2><p>{browser.error}</p></div>}
-    {browser?.console_errors?.length ? <div className="request-log" style={{ marginTop: 14 }}><div className="panel-label" style={{ padding: 12 }}>Console errors</div>{browser.console_errors.map((error, index) => <pre key={index} className="evidence-block" style={{ margin: 0, borderBottom: '1px solid var(--line)', borderLeft: 0 }}>{error}</pre>)}</div> : null}
-    <div className="request-log" style={{ marginTop: 14 }}>
-      {requests.length ? requests.map((request, index) => <div key={`${request.url}-${index}`} className="request-row"><span className="request-row__method">{request.method}</span><span className="request-row__url">{request.url}</span><span className={`request-row__state ${request.blocked ? 'blocked' : 'allowed'}`}>{request.blocked ? 'blocked' : 'allowed'}</span></div>) : <div style={{ padding: 14, color: 'var(--muted)', fontSize: 11 }}>No browser requests were captured.</div>}
-    </div>
-  </div>
+  )
 }
 
 function Signals({ data }: { data: Awaited<ReturnType<typeof getAnalysis>> }) {
